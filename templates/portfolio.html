@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stocker - Portfolio</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">📈 Stocker</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/trade">Trade</a>
+            <a href="/logout" class="btn-danger">Logout</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="welcome-banner">
+            <h2>💼 My Portfolio</h2>
+            <p>Track your investments and holdings</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>💰 Available Balance</h3>
+                <p class="stat-value">${{ user.balance }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>📦 Total Holdings</h3>
+                <p class="stat-value">{{ portfolio|length }} Stocks</p>
+            </div>
+            <div class="stat-card">
+                <h3>📈 Portfolio Value</h3>
+                <p class="stat-value">${{ total_value }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>💵 Total Worth</h3>
+                <p class="stat-value">${{ "%.2f"|format(user.balance + total_value) }}</p>
+            </div>
+        </div>
+
+        <!-- Portfolio Table -->
+        <div class="market-section">
+            <h3>📊 My Holdings</h3>
+
+            {% if portfolio %}
+            <div class="trade-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Company</th>
+                            <th>Shares</th>
+                            <th>Avg Price</th>
+                            <th>Current Price</th>
+                            <th>Total Value</th>
+                            <th>Profit/Loss</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in portfolio %}
+                        <tr>
+                            <td><strong>{{ stock.symbol }}</strong></td>
+                            <td>{{ stock.company }}</td>
+                            <td>{{ stock.quantity }}</td>
+                            <td>${{ stock.avg_price }}</td>
+                            <td>${{ stock.current_price }}</td>
+                            <td>${{ stock.total_value }}</td>
+                            <td class="{{ 'green' if stock.profit >= 0 else 'red' }}">
+                                {{ '▲' if stock.profit >= 0 else '▼' }}
+                                ${{ "%.2f"|format(stock.profit|abs) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-portfolio">
+                <h3>📭 No Holdings Yet!</h3>
+                <p>You haven't bought any stocks yet.</p>
+                <a href="/trade" class="btn-primary">Start Trading</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Transaction History -->
+        <div class="market-section">
+            <h3>🔄 Transaction History</h3>
+            {% if transactions %}
+            <div class="trade-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Symbol</th>
+                            <th>Shares</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transactions %}
+                        <tr>
+                            <td class="{{ 'green' if tx.action == 'buy' else 'red' }}">
+                                {{ tx.action|upper }}
+                            </td>
+                            <td><strong>{{ tx.symbol }}</strong></td>
+                            <td>{{ tx.quantity }}</td>
+                            <td>${{ tx.price }}</td>
+                            <td>${{ tx.total }}</td>
+                            <td>{{ tx.date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-portfolio">
+                <h3>📭 No Transactions Yet!</h3>
+                <p>Your transaction history will appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>
